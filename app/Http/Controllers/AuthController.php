@@ -55,13 +55,31 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-
-        if ($token = $this->guard()->attempt($credentials)) {
-            return $this->respondWithToken($token);
+        $validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password'  => 'required|min:8',
+        ]);
+        if($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => $validator->errors()->first(),
+            ]);
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
+        $user = User::where('email', $request->email)->first();
+
+        $token_validity = 24 * 60;
+
+        auth()->factory()->setTTL($token_validity);
+        if(!$token = auth()->attempt($validator->validated())) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => 'The credentials you provided is wrong. Please try again.'
+            ]);
+        }
+        return $this->respondWithToken($token, $user);
     }
 
     /**
@@ -103,13 +121,21 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token)
+    protected function respondWithToken($token, $user)
     {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => $this->guard()->factory()->getTTL() * 60
-        ]);
+        $data = [
+            'accessToken' => $token,
+            'tokenType' => 'bearer',
+            'name' => $user->name,
+            'email' => $user->email,
+            'userId' => $user->id
+        ];
+
+        return [
+            'success' => true,
+            'message' => 'Sign In Successfully',
+            'data' => $data
+        ];
     }
 
     /**
