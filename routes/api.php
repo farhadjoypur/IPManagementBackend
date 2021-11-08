@@ -25,8 +25,8 @@ Route::group(['middleware' => 'api', 'namespace' => 'App\Http\Controllers', 'pre
     Route::post('logout', 'AuthController@logout');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('me', 'AuthController@me');
-
 });
+
 Route::group(['middleware' => 'api', 'namespace' => 'App\Http\Controllers', 'prefix' => 'ip'], function ($router) {
 
     Route::get('getIpInfo', 'IPInfoController@getIpInfo');
