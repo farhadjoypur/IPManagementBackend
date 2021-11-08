@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IPInfo;
+use App\Models\IPLogs;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -79,6 +82,10 @@ class AuthController extends Controller
                 'message' => 'The credentials you provided is wrong. Please try again.'
             ]);
         }
+        $IPLogs = new IPLogs();
+        $IPLogs->userId =  $user->id;
+        $IPLogs->type =  "Logged in";
+        $IPLogs->save();
         return $this->respondWithToken($token, $user);
     }
 
@@ -97,11 +104,14 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout()
+    public function logout(Request $request)
     {
         $this->guard()->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        $user = new IPLogs();
+        $user->userId =  $request->userId;
+        $user->type =  "LogOut!";
+        $user->save();
+        return response()->json(['success'=>true,'message' => 'Successfully logged out']);
     }
 
     /**

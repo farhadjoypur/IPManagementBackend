@@ -31,5 +31,7 @@ Route::group(['middleware' => 'api', 'namespace' => 'App\Http\Controllers', 'pre
 
     Route::get('getIpInfo', 'IPInfoController@getIpInfo');
     Route::post('submitIPData', 'IPInfoController@submitIPData');
-
+    Route::post('updateIPData', 'IPInfoController@updateIPData');
+    Route::get('getIpLogs', 'IPInfoController@getIpLogs');
+    Route::get('getIPInfoById/{id}', 'IPInfoController@getIPInfoById');
 });

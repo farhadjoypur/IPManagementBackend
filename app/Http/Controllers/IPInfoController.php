@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\IPInfo;
+use App\Models\IPLogs;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,9 +21,17 @@ class IPInfoController extends Controller
         return $iPdata;
     }
 
-    public function submitIPData(Request $request){
-        Log::info($request->all());
+    public function getIpLogs(){
+        $ipLogs = IPLogs::with('user')->get();
+        return $ipLogs;
+    }
 
+    public function getIPInfoById($id){
+        $ipData = IPInfo::where('id', $id)->first();
+        return $ipData;
+    }
+
+    public function submitIPData(Request $request){
         $validator = Validator::make($request->all(),[
             'ip' => 'required',
             'description' => 'required'
@@ -44,6 +53,30 @@ class IPInfoController extends Controller
             'success' => true,
             'statusCode' => 200,
             'message' => 'Successfully registered !',
+        ];
+    }
+    public function updateIPData(Request $request){
+        $validator = Validator::make($request->all(),[
+            'ip' => 'required',
+            'description' => 'required'
+        ]);
+        if($validator->fails()) {
+            return response()->json([
+                "message" => $validator->errors()->first(),
+                'success' => false,
+                'statusCode' => 422
+            ]);
+        }
+        IPInfo::where('id', $request->id)->update(array('ip' => $request->ip, 'description' => $request->description));
+        $getUserId = IPInfo::where('id', $request->id)->first();
+        $user = new IPLogs();
+        $user->userId =  $getUserId->userId;
+        $user->type =  "Update IP Address";
+        $user->save();
+        return [
+            'success' => true,
+            'statusCode' => 200,
+            'message' => 'Successfully Updated IP Data !',
         ];
     }
 }
