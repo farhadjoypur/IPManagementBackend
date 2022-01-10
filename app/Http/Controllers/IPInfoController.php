@@ -43,11 +43,7 @@ class IPInfoController extends Controller
                 'statusCode' => 422
             ]);
         }
-        $user = new IPInfo();
-        $user->userId =  $request->userId;
-        $user->ip =  $request->ip;
-        $user->description = $request->description;
-        $user->save();
+        return $this->ipInsertData($request);
 
         return [
             'success' => true,
@@ -78,5 +74,12 @@ class IPInfoController extends Controller
             'statusCode' => 200,
             'message' => 'Successfully Updated IP Data !',
         ];
+    }
+    protected function ipInsertData($request){
+        $user = new IPInfo();
+        $user->userId =  $request->userId;
+        $user->ip =  $request->ip;
+        $user->description = $request->description;
+        $user->save();
     }
 }
